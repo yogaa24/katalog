@@ -58,6 +58,28 @@ class Login extends CI_Controller
                     );
                     $this->session->set_userdata($data_session);
                     redirect('keuangan');
+               } else if ($key->username == $username 
+                    && password_verify($password, $key->password) 
+                    && $key->hak_akses == '4') {
+
+                    $data_session = array(
+                        'id_user'   => $key->id_user,
+                        'nama_user' => $key->nama_user,
+                        'hak_akses' => $key->hak_akses,
+                        'status'    => "login"
+                    );
+
+                    $this->session->set_userdata($data_session);
+                    redirect('salesonline');
+                } else if ($key->username == $username && password_verify($password, $key->password) && $key->hak_akses == '5') {
+                    $data_session = array(
+                        'id_user'       => $key->id_user,
+                        'nama_user'     => $key->nama_user,
+                        'hak_akses'     => $key->hak_akses,
+                        'status'        => "login"
+                    );
+                    $this->session->set_userdata($data_session);
+                    redirect('viewer');
                 } else {
                     $this->session->set_flashdata("gagal", "username / password salah!!!");
                     redirect('login');

@@ -19,6 +19,7 @@ class Katalog extends CI_Controller
         }
 
         $data['barang'] = $this->M_Katalog->getAll();
+        $data['statistik'] = $this->M_Katalog->getStatistik();
 
         $this->load->view("partial/katalog/header");
         $this->load->view("content/katalog/dashboard", $data);
@@ -27,8 +28,10 @@ class Katalog extends CI_Controller
 
     function getBarang()
     {
+        $hak_akses = $this->session->userdata('hak_akses');
         $list = $this->M_Katalog->get_datatables();
         $data = array();
+
         foreach ($list as $field) {
             $row = array();
             $row[] = $field->kode_barang;
@@ -37,27 +40,93 @@ class Katalog extends CI_Controller
             $row[] = $field->nama_suplier;
             $row[] = $field->kelompok;
             $row[] = $field->bahan_aktif;
+
             $imagePath = "images/produk/" . $field->gbr_produk;
-            if (!file_exists($imagePath))
-                $imagePath = "images/Karisma.png";
-            $row[] = '<img src="' . $imagePath . '" style="width:100px; height:100px">';
-            $row[] =
-                '<a href="' . base_url('') . 'pricelist?id=' . $field->kode_barang . '" class="btn btn-primary btn-sm " target="_blank">
-            <i class="fa fa-solid fa-eye"></i></a>' . ' ' . '
-            <a href="#" class="btn btn-warning btn-sm " data-toggle="modal" data-target="#editbarang' . $field->id_barang . '">
-            <i class="fa fa-solid fa-pencil-alt"></i></a>' . ' ' . '
-            <a href="#" class="btn btn-danger btn-sm " data-toggle="modal" data-target="#hapus' . $field->id_barang . '">
-            <i class="fa fa-solid fa-trash"></i></a>';
+            if (!file_exists($imagePath)) $imagePath = "images/Karisma.png";
+            $row[] = '<img src="' . $imagePath . '" style="width:80px; height:80px; object-fit:cover;">';
+
+            // Badge 3 platform
+            $shopee_badge    = $field->shopee    
+                ? '<span class="badge badge-success mb-1"><i class="fa fa-check"></i> Shopee</span>'    
+                : '<span class="badge badge-secondary mb-1">Shopee -</span>';
+            $tokopedia_badge = $field->tokopedia 
+                ? '<span class="badge badge-success mb-1"><i class="fa fa-check"></i> Tokopedia</span>' 
+                : '<span class="badge badge-secondary mb-1">Tokopedia -</span>';
+            $kiushop_badge   = $field->kiushop   
+                ? '<span class="badge badge-success mb-1"><i class="fa fa-check"></i> KiuShop</span>'   
+                : '<span class="badge badge-secondary mb-1">KiuShop -</span>';
+            $row[] = $shopee_badge . '<br>' . $tokopedia_badge . '<br>' . $kiushop_badge;
+
+            // Aksi
+            $aksi = '<a href="' . base_url('pricelist?id=' . $field->kode_barang) . '" 
+                        class="btn btn-primary btn-sm" target="_blank">
+                        <i class="fa fa-eye"></i>
+                    </a> ';
+
+            if ($hak_akses == '1') {
+                $aksi .= '
+                    <button class="btn btn-warning btn-sm btn-edit"
+                        data-id="'       . $field->id_barang   . '"
+                        data-kode="'     . $field->kode_barang  . '"
+                        data-nama="'     . $field->nama_barang  . '"
+                        data-fokus="'    . $field->produk_fokus . '"
+                        data-suplier="'  . $field->nama_suplier . '"
+                        data-katagori="' . $field->bahan_aktif  . '">
+                        <i class="fa fa-pencil-alt"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-hapus"
+                        data-id="'   . $field->id_barang  . '"
+                        data-nama="' . $field->nama_barang . '">
+                        <i class="fa fa-trash"></i>
+                    </button> ';
+            }
+
+            if ($hak_akses == '1' || $hak_akses == '4') {
+                $aksi .= '
+                    <button class="btn btn-info btn-sm btn-online"
+                        data-id="'        . $field->id_barang   . '"
+                        data-kode="'      . $field->kode_barang  . '"
+                        data-nama="'      . $field->nama_barang  . '"
+                        data-shopee="'    . $field->shopee       . '"
+                        data-tokopedia="' . $field->tokopedia    . '"
+                        data-kiushop="'   . $field->kiushop      . '">
+                        <i class="fa fa-store"></i>
+                    </button>';
+            }
+
+            // Badge status aktif
+            $isactive = $field->isactive ?? 'F';
+            if ($isactive === 'F') {
+                $status_badge = '<span class="badge badge-success">Aktif</span>';
+                $toggle_val   = 'T';
+                $toggle_label = 'Non Aktifkan';
+                $toggle_class = 'btn-outline-danger';
+            } else {
+                $status_badge = '<span class="badge badge-danger">Non Aktif</span>';
+                $toggle_val   = 'F';
+                $toggle_label = 'Aktifkan';
+                $toggle_class = 'btn-outline-success';
+            }
+
+            $row[] = $status_badge . '<br>
+                <button class="btn btn-sm ' . $toggle_class . ' btn-toggle-aktif mt-1"
+                    data-id="'     . $field->id_barang  . '"
+                    data-nama="'   . $field->nama_barang . '"
+                    data-status="' . $toggle_val         . '"
+                    data-label="'  . $toggle_label       . '">
+                    ' . $toggle_label . '
+                </button>';
+
+            $row[] = $aksi;
             $data[] = $row;
         }
 
         $output = array(
-            "draw" => $_POST['draw'],
-            "recordsTotal" => $this->M_Katalog->count_all(),
+            "draw"            => $_POST['draw'],
+            "recordsTotal"    => $this->M_Katalog->count_all(),
             "recordsFiltered" => $this->M_Katalog->count_filtered(),
-            "data" => $data,
+            "data"            => $data,
         );
-        //output dalam format JSON
         echo json_encode($output);
     }
 
@@ -164,5 +233,38 @@ class Katalog extends CI_Controller
 
         $this->M_Katalog->editdataKat($data, $id_barang);
         redirect('dashboard');
+    }
+
+    public function updateOnlineShop()
+    {
+        $id_barang   = $this->input->post('id_barang');
+        $kode_barang = $this->input->post('kode_barang');
+        $shopee      = $this->input->post('shopee')    ? 1 : 0;
+        $tokopedia   = $this->input->post('tokopedia') ? 1 : 0;
+        $kiushop     = $this->input->post('kiushop')   ? 1 : 0;
+
+        $data = array(
+            'shopee'    => $shopee,
+            'tokopedia' => $tokopedia,
+            'kiushop'   => $kiushop
+        );
+
+        $this->M_Katalog->updateOnlineShop($data, $id_barang);
+
+        $hak_akses = $this->session->userdata('hak_akses');
+        if ($hak_akses == '4') {
+            redirect('salesonline');
+        } else {
+            redirect('dashboard');
+        }
+    }
+
+    public function toggleAktif()
+    {
+        $id_barang = $this->input->post('id_barang');
+        $status    = $this->input->post('isactive'); // 'F' atau 'T'
+
+        $this->M_Katalog->toggleAktif($id_barang, $status);
+        echo json_encode(['success' => true]);
     }
 }

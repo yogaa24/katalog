@@ -193,19 +193,52 @@ class M_Pricelist extends CI_Model
     public function getPricelistNew($kode_barang)
     {
         $this->db->where('kode_barang', $kode_barang);
-        $this->db->where('ket1 !=', '');
         $this->db->order_by('id_pricelist', 'ASC');
         $query = $this->db->get('tb_pricelist');
         
         $result = array();
         foreach ($query->result_array() as $row) {
-            $result[] = array(
-                'id' => $row['id_pricelist'],
-                'satuan' => $row['ket1'],
-                'r1' => $row['qty_1'],
-                'r2' => $row['qty_2'],
-                'umum' => $row['qty_3']
-            );
+            // Tambahkan semua qty yang ada datanya dengan informasi slot
+            if (!empty($row['ket1'])) {
+                $result[] = array(
+                    'id' => $row['id_pricelist'],
+                    'slot' => 'qty_1',
+                    'satuan' => $row['ket1'],
+                    'r1' => $row['qty_1_r1'],
+                    'r2' => $row['qty_1_r2'],
+                    'umum' => $row['qty_1_umum']
+                );
+            }
+            if (!empty($row['ket2'])) {
+                $result[] = array(
+                    'id' => $row['id_pricelist'],
+                    'slot' => 'qty_2',
+                    'satuan' => $row['ket2'],
+                    'r1' => $row['qty_2_r1'],
+                    'r2' => $row['qty_2_r2'],
+                    'umum' => $row['qty_2_umum']
+                );
+            }
+            if (!empty($row['ket3'])) {
+                $result[] = array(
+                    'id' => $row['id_pricelist'],
+                    'slot' => 'qty_3',
+                    'satuan' => $row['ket3'],
+                    'r1' => $row['qty_3_r1'],
+                    'r2' => $row['qty_3_r2'],
+                    'umum' => $row['qty_3_umum']
+                );
+            }
+            if (!empty($row['ket4'])) {
+                $result[] = array(
+                    'id' => $row['id_pricelist'],
+                    'slot' => 'qty_4',
+                    'satuan' => $row['ket4'],
+                    'r1' => $row['qty_4_r1'],
+                    'r2' => $row['qty_4_r2'],
+                    'umum' => $row['qty_4_umum']
+                );
+            }
         }
         
         return $result;

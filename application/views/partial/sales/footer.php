@@ -23,29 +23,116 @@
     var table;
     $(document).ready(function() {
 
-        //datatables
-        table = $('#table').DataTable({
+        var filterFokus  = '';
+        var filterOnline = '';
+        var filterAktif  = 'F';
 
-            columnDefs: [{
-                targets: -1,
-                className: 'dt-body-center'
-            }],
-
+        var table = $('#table').DataTable({ 
             "processing": true,
             "serverSide": true,
             "order": [],
-
+            "responsive": true,
             "ajax": {
-                "url": "<?php echo site_url('Sales/getBarang') ?>",
-                "type": "POST"
+                "url": "<?= base_url('Sales/getBarang') ?>",
+                "type": "POST",
+                "data": function(d) {
+                    d.filter_fokus  = filterFokus;
+                    d.filter_online = filterOnline;
+                    d.filter_aktif  = filterAktif;
+                }
             },
-            "columnDefs": [{
-                "visible": false,
-                "targets": [0],
-                "orderable": false,
-            }, ],
+            "columnDefs": [
+                { "visible": false, "targets": [0] },
+                { "orderable": false, "targets": [6,7,8] },
+                { "className": "text-center", "targets": "_all" }
+            ],
+            "drawCallback": function() {
 
+                $('.btn-online').off('click').on('click', function() {
+                    $('#online_id_barang').val($(this).data('id'));
+                    $('#online_kode_barang').val($(this).data('kode'));
+                    $('#online_nama_barang').text($(this).data('nama'));
+                    $('#switch_shopee').prop('checked', $(this).data('shopee') == 1);
+                    $('#switch_tokopedia').prop('checked', $(this).data('tokopedia') == 1);
+                    $('#switch_kiushop').prop('checked', $(this).data('kiushop') == 1);
+                    $('#modalOnlineShop').modal('show');
+                });
+            }
         });
+
+        // FILTER PRODUK FOKUS
+        $('.btn-filter-fokus').click(function() {
+            $('.btn-filter-fokus').removeClass('active');
+            $(this).addClass('active');
+            filterFokus = $(this).data('fokus');
+            table.ajax.reload();
+        });
+
+        // Filter Online Shop ← tambahan baru
+        $(document).on('click', '.btn-filter-online', function() {
+            $('.btn-filter-online').each(function() {
+                $(this).removeClass('active');
+                // Reset style ke default
+                var online = $(this).data('online');
+                if (online == 'shopee') {
+                    $(this).css({'background':'white', 'color':'#ee4d2d'});
+                } else if (online == 'tokopedia') {
+                    $(this).css({'background':'white', 'color':'#42b549'});
+                } else if (online == 'kiushop') {
+                    $(this).css({'background':'white', 'color':'#6096B4'});
+                }
+            });
+
+            $(this).addClass('active');
+
+            // Highlight tombol aktif
+            var online = $(this).data('online');
+            if (online == 'shopee') {
+                $(this).css({'background':'#ee4d2d', 'color':'white'});
+            } else if (online == 'tokopedia') {
+                $(this).css({'background':'#42b549', 'color':'white'});
+            } else if (online == 'kiushop') {
+                $(this).css({'background':'#6096B4', 'color':'white'});
+            }
+
+            filterOnline = online;
+            table.ajax.reload();
+        });
+
+        // Klik filter status
+        $(document).on('click', '.btn-filter-aktif', function() {
+            $('.btn-filter-aktif').removeClass('active btn-success btn-danger btn-secondary')
+                                .addClass(function() {
+                                    var d = $(this).data('aktif');
+                                    return d === 'F' ? 'btn-outline-success' 
+                                        : d === 'T' ? 'btn-outline-danger' 
+                                        : 'btn-outline-secondary';
+                                });
+            $(this).removeClass('btn-outline-success btn-outline-danger btn-outline-secondary')
+                .addClass('active')
+                .addClass(function() {
+                    var d = $(this).data('aktif');
+                    return d === 'F' ? 'btn-success' 
+                            : d === 'T' ? 'btn-danger' 
+                            : 'btn-secondary';
+                });
+
+            filterAktif = $(this).data('aktif');
+            table.ajax.reload();
+
+            // Update info cards sesuai filter
+            updateCards(filterAktif);
+        });
+
+        function updateCards(aktif) {
+            $.post('<?= base_url("sales/getStatistik") ?>', { filter: aktif }, function(res) {
+                $('#card_total').text(res.total);
+                $('#card_shopee').text(res.shopee);
+                $('#card_tokopedia').text(res.tokopedia);
+                $('#card_kiushop').text(res.kiushop);
+            }, 'json');
+        }
+
     });
 
     // Set the date we're counting down to

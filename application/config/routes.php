@@ -58,6 +58,11 @@ $route['getBarangServer'] = 'Katalog/getBarang';
 $route['hapusBarang/(:num)'] = 'Katalog/deleteDat';
 $route['user'] = 'User';
 $route['sales'] = 'Sales';
+
+$route['salesonline/getBarang'] = 'SalesOnline/getBarang';
+
+$route['viewer'] = 'Viewer';
+$route['salesonline'] = 'SalesOnline';
 $route['keuangan'] = 'Keuangan';
 $route['keuangan'] = 'pricelist/addPromoImg1';
 $route['keuangan/add'] = 'Keuangan/add';

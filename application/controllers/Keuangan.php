@@ -18,8 +18,6 @@ class Keuangan extends CI_Controller
             redirect('login');
         }
 
-
-
         $this->load->view("partial/katalog/header");
         $this->load->view("content/katalog/dashboardkeu");
         $this->load->view("partial/katalog/footerkeu");

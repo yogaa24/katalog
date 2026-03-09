@@ -176,6 +176,14 @@ class Pricelist extends CI_Controller
 
     public function addPromoImg1()
     {
+
+        // // Tambahkan validasi akses
+        // $hak = $this->session->userdata('hak_akses');
+        // if ($hak != '1' && $hak != '2') {
+        //     redirect('pricelist');
+        //     return;
+        // }
+
         $id_barang = $this->input->post("id_bar");
         $kd_barang = $this->input->post("kode_barang_isi");
         $nama_bar = $this->input->post("nama_barang_isi");
@@ -185,7 +193,7 @@ class Pricelist extends CI_Controller
 
         if (!empty($_FILES['gambar_1'])) {
             $config['upload_path'] = './images/kontrak/';
-            $config['allowed_types'] = 'jpg|png|gif';
+            $config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
             $config['max_size'] = '10000';
             $config['max_width'] = '6000';
             $config['max_height'] = '6000';
@@ -193,6 +201,15 @@ class Pricelist extends CI_Controller
             $config['file_name'] = 'PROMO-1-' . date('Y') . date('m') . date('U') . '_' . $_FILES['gambar_1']['name'];
             $this->load->library('upload', $config);
             $this->upload->initialize($config);
+
+            // Tambahkan ini agar MIME type dikenali dengan benar
+            $config['mime_types'] = array(
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png'  => 'image/png',
+                'gif'  => 'image/gif',
+                'webp' => 'image/webp'
+            );
 
             if (!$this->upload->do_upload('gambar_1')) {
                 $error = array('error' => $this->upload->display_errors());
@@ -223,6 +240,14 @@ class Pricelist extends CI_Controller
 
     public function addPromoImg2()
     {
+
+        // $hak = $this->session->userdata('hak_akses');
+        // if ($hak != '1' && $hak != '2') {
+        //     redirect('pricelist');
+        //     return;
+        // }
+
+
         $id_barang = $this->input->post("id_bar");
         $kd_barang = $this->input->post("kode_barang_isi");
         $nama_bar = $this->input->post("nama_barang_isi");
@@ -232,7 +257,7 @@ class Pricelist extends CI_Controller
 
         if (!empty($_FILES['gambar_1'])) {
             $config['upload_path'] = './images/kontrak/';
-            $config['allowed_types'] = 'jpg|png|gif';
+            $config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
             $config['max_size'] = '10000';
             $config['max_width'] = '6000';
             $config['max_height'] = '6000';
@@ -270,6 +295,13 @@ class Pricelist extends CI_Controller
 
     public function gambarproduk_br()
     {
+
+        $hak = $this->session->userdata('hak_akses');
+        if ($hak != '1' && $hak != '2' && $hak != '4') {
+            redirect('pricelist');
+            return;
+        }
+
         $id_barang = $this->input->post("id_bar");
         $kd_barang = $this->input->post("kode_barang_isi");
         $nama_bar  = preg_replace('/[^A-Za-z0-9_\-]/', '_', $this->input->post("nama_barang_isi"));
@@ -306,6 +338,13 @@ class Pricelist extends CI_Controller
 
     public function addPromoImg3()
     {
+
+        // $hak = $this->session->userdata('hak_akses');
+        // if ($hak != '1' && $hak != '2') {
+        //     redirect('pricelist');
+        //     return;
+        // }
+
         $id_barang = $this->input->post("id_bar");
         $kd_barang = $this->input->post("kode_barang_isi");
         $nama_bar = $this->input->post("nama_barang_isi");
@@ -315,7 +354,7 @@ class Pricelist extends CI_Controller
 
         if (!empty($_FILES['gambar_1'])) {
             $config['upload_path'] = './images/kontrak/';
-            $config['allowed_types'] = 'jpg|png|gif';
+            $config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
             $config['max_size'] = '10000';
             $config['max_width'] = '6000';
             $config['max_height'] = '6000';
@@ -413,6 +452,7 @@ class Pricelist extends CI_Controller
         $r2 = $this->input->post('r2');
         $umum = $this->input->post('umum');
         
+        // Ambil data barang berdasarkan kode_barang
         $this->db->where('kode_barang', $kode_barang);
         $query = $this->db->get('tb_barangv2');
         $barang_info = $query->row_array();
@@ -423,57 +463,184 @@ class Pricelist extends CI_Controller
             return;
         }
         
-        $data = array(
-            'kode_barang' => $barang_info['kode_barang'],
-            'nama_barang' => $barang_info['nama_barang'],
-            'qty_1' => $r1 ? $r1 : 0,
-            'qty_2' => $r2 ? $r2 : 0,
-            'qty_3' => $umum ? $umum : 0,
-            'qty_4' => 0,
-            'ket1' => $satuan,
-            'ket2' => '',
-            'ket3' => '',
-            'ket4' => ''
-        );
+        // Cek apakah sudah ada data pricelist untuk barang ini
+        $this->db->where('kode_barang', $kode_barang);
+        $existing = $this->db->get('tb_pricelist')->row_array();
         
-        $this->M_Pricelist->insertPricelistNew($data);
+        if ($existing) {
+            // Update data yang sudah ada - cari slot kosong
+            $update_data = array();
+            
+            if (empty($existing['ket1'])) {
+                // Slot 1 kosong
+                $update_data = array(
+                    'qty_1_r1' => $r1 ? $r1 : 0,
+                    'qty_1_r2' => $r2 ? $r2 : 0,
+                    'qty_1_umum' => $umum ? $umum : 0,
+                    'ket1' => $satuan
+                );
+            } elseif (empty($existing['ket2'])) {
+                // Slot 2 kosong
+                $update_data = array(
+                    'qty_2_r1' => $r1 ? $r1 : 0,
+                    'qty_2_r2' => $r2 ? $r2 : 0,
+                    'qty_2_umum' => $umum ? $umum : 0,
+                    'ket2' => $satuan
+                );
+            } elseif (empty($existing['ket3'])) {
+                // Slot 3 kosong
+                $update_data = array(
+                    'qty_3_r1' => $r1 ? $r1 : 0,
+                    'qty_3_r2' => $r2 ? $r2 : 0,
+                    'qty_3_umum' => $umum ? $umum : 0,
+                    'ket3' => $satuan
+                );
+            } elseif (empty($existing['ket4'])) {
+                // Slot 4 kosong
+                $update_data = array(
+                    'qty_4_r1' => $r1 ? $r1 : 0,
+                    'qty_4_r2' => $r2 ? $r2 : 0,
+                    'qty_4_umum' => $umum ? $umum : 0,
+                    'ket4' => $satuan
+                );
+            } else {
+                // Semua slot penuh
+                $this->session->set_flashdata('error', 'Pricelist sudah penuh (maksimal 4 satuan)');
+                redirect('pricelist?id=' . $kode_barang);
+                return;
+            }
+            
+            // Update record yang ada
+            $this->db->where('id_pricelist', $existing['id_pricelist']);
+            $this->db->update('tb_pricelist', $update_data);
+            
+        } else {
+            // Insert data baru jika belum ada
+            $data = array(
+                'kode_barang' => $barang_info['kode_barang'],
+                'nama_barang' => $barang_info['nama_barang'],
+                'qty_1_r1' => $r1 ? $r1 : 0,
+                'qty_1_r2' => $r2 ? $r2 : 0,
+                'qty_1_umum' => $umum ? $umum : 0,
+                'ket1' => $satuan,
+                'qty_2_r1' => 0,
+                'qty_2_r2' => 0,
+                'qty_2_umum' => 0,
+                'ket2' => '',
+                'qty_3_r1' => 0,
+                'qty_3_r2' => 0,
+                'qty_3_umum' => 0,
+                'ket3' => '',
+                'qty_4_r1' => 0,
+                'qty_4_r2' => 0,
+                'qty_4_umum' => 0,
+                'ket4' => ''
+            );
+            
+            $this->db->insert('tb_pricelist', $data);
+        }
+        
         $this->session->set_flashdata('success', 'Pricelist berhasil ditambahkan');
         redirect('pricelist?id=' . $barang_info['kode_barang']);
     }
 
-    public function delete($id)
+    public function delete_item()
     {
-        // Ambil data pricelist untuk redirect
-        $pricelist = $this->M_Pricelist->getPricelistById($id);
+        $id = $this->input->post('id_pricelist');
+        $qty_slot = $this->input->post('qty_slot');
+        $kode_barang = $this->input->post('kode_barang');
         
-        if (!$pricelist) {
-            $this->session->set_flashdata('error', 'Data pricelist tidak ditemukan');
-            redirect('pricelist');
-            return;
+        // Kosongkan slot yang dipilih
+        $data = array();
+        
+        if ($qty_slot == 'qty_1') {
+            $data = array(
+                'qty_1_r1' => 0,
+                'qty_1_r2' => 0,
+                'qty_1_umum' => 0,
+                'ket1' => ''
+            );
+        } elseif ($qty_slot == 'qty_2') {
+            $data = array(
+                'qty_2_r1' => 0,
+                'qty_2_r2' => 0,
+                'qty_2_umum' => 0,
+                'ket2' => ''
+            );
+        } elseif ($qty_slot == 'qty_3') {
+            $data = array(
+                'qty_3_r1' => 0,
+                'qty_3_r2' => 0,
+                'qty_3_umum' => 0,
+                'ket3' => ''
+            );
+        } elseif ($qty_slot == 'qty_4') {
+            $data = array(
+                'qty_4_r1' => 0,
+                'qty_4_r2' => 0,
+                'qty_4_umum' => 0,
+                'ket4' => ''
+            );
         }
         
-        $kode_barang = $pricelist['kode_barang'];
+        $this->db->where('id_pricelist', $id);
+        $this->db->update('tb_pricelist', $data);
         
-        $this->M_Pricelist->deletePricelist($id);
-        $this->session->set_flashdata('success', 'Pricelist berhasil dihapus');
+        // Cek apakah semua slot kosong, jika ya hapus record
+        $this->db->where('id_pricelist', $id);
+        $check = $this->db->get('tb_pricelist')->row_array();
+        
+        if (empty($check['ket1']) && empty($check['ket2']) && empty($check['ket3']) && empty($check['ket4'])) {
+            $this->db->where('id_pricelist', $id);
+            $this->db->delete('tb_pricelist');
+        }
+        
+        $this->session->set_flashdata('success', 'Item pricelist berhasil dihapus');
         redirect('pricelist?id=' . $kode_barang);
     }
 
     public function edit()
     {
         $id = $this->input->post('id_pricelist');
-        $kode_barang = $this->input->post('kode_barang'); // Tambahkan ini di form
+        $kode_barang = $this->input->post('kode_barang');
+        $qty_slot = $this->input->post('qty_slot'); // qty_1, qty_2, qty_3, atau qty_4
         $satuan = $this->input->post('satuan');
         $r1 = $this->input->post('r1');
         $r2 = $this->input->post('r2');
         $umum = $this->input->post('umum');
         
-        $data = array(
-            'qty_1' => $r1 ? $r1 : 0,
-            'qty_2' => $r2 ? $r2 : 0,
-            'qty_3' => $umum ? $umum : 0,
-            'ket1' => $satuan
-        );
+        // Tentukan field mana yang akan diupdate berdasarkan slot
+        $data = array();
+        
+        if ($qty_slot == 'qty_1') {
+            $data = array(
+                'qty_1_r1' => $r1 ? $r1 : 0,
+                'qty_1_r2' => $r2 ? $r2 : 0,
+                'qty_1_umum' => $umum ? $umum : 0,
+                'ket1' => $satuan
+            );
+        } elseif ($qty_slot == 'qty_2') {
+            $data = array(
+                'qty_2_r1' => $r1 ? $r1 : 0,
+                'qty_2_r2' => $r2 ? $r2 : 0,
+                'qty_2_umum' => $umum ? $umum : 0,
+                'ket2' => $satuan
+            );
+        } elseif ($qty_slot == 'qty_3') {
+            $data = array(
+                'qty_3_r1' => $r1 ? $r1 : 0,
+                'qty_3_r2' => $r2 ? $r2 : 0,
+                'qty_3_umum' => $umum ? $umum : 0,
+                'ket3' => $satuan
+            );
+        } elseif ($qty_slot == 'qty_4') {
+            $data = array(
+                'qty_4_r1' => $r1 ? $r1 : 0,
+                'qty_4_r2' => $r2 ? $r2 : 0,
+                'qty_4_umum' => $umum ? $umum : 0,
+                'ket4' => $satuan
+            );
+        }
         
         $this->M_Pricelist->updatePricelist($data, $id);
         $this->session->set_flashdata('success', 'Pricelist berhasil diupdate');

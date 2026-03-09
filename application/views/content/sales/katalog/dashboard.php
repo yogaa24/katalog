@@ -101,6 +101,156 @@
         <div class="container"></div>
     </div>
 
+    <!-- INFO CARDS -->
+    <div class="row mb-3 mt-3 px-2">
+        <div class="col-6 col-md-3 mb-2">
+            <div class="info-box shadow-sm mb-0">
+                <span class="info-box-icon bg-primary">
+                    <i class="fa fa-boxes"></i>
+                </span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Total Produk</span>
+                    <span class="info-box-number" id="card_total"><?= $statistik['total'] ?></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-2">
+            <div class="info-box shadow-sm mb-0" style="border-left: 4px solid #ee4d2d;">
+                <span class="info-box-icon d-flex align-items-center justify-content-center" 
+                    style="background-color:#ee4d2d;">
+                    
+                    <!-- Icon Shopee -->
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                        <g stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                            <path d="m4 7l.867 12.143a2 2 0 0 0 2 1.857h10.276a2 2 0 0 0 2-1.857L20.01 7z"/>
+                            <path d="M8.5 7c0-1.653 1.5-4 3.5-4s3.5 2.347 3.5 4"/>
+                            <path d="M9.5 17c.413.462 1 1 2.5 1s2.5-.897 2.5-2s-1-1.5-2.5-2s-2-1.47-2-2c0-1.104 1-2 2-2s1.5 0 2.5 1"/>
+                        </g>
+                    </svg>
+
+                </span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Shopee</span>
+                    <span class="info-box-number" id="card_shopee"><?= $statistik['shopee'] ?></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-2">
+            <div class="info-box shadow-sm mb-0" style="border-left: 4px solid #42b549;">
+                <span class="info-box-icon d-flex align-items-center justify-content-center" 
+                    style="background-color:#42b549;">
+                    
+                    <!-- Icon Tokopedia -->
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        width="40" height="40" 
+                        viewBox="0 0 48 48">
+                        
+                        <g stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
+                            <path d="M27.043 12.942c-3.43-2.897-16.85-2.247-16.85-2.247l-.473 32.65s17.855.134 23.353 0s9.341-4.508 9.4-7.878s0-24.18 0-24.18c-6.858-.829-11.942-.178-15.43 1.655"/>
+                            <circle cx="19.531" cy="24.172" r="6.976"/>
+                            <path d="M32.043 29.33a6.272 6.272 0 1 0-2.3-1.786"/>
+                        </g>
+                    </svg>
+
+                </span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Tokopedia</span>
+                    <span class="info-box-number" id="card_tokopedia"><?= $statistik['tokopedia'] ?></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-2">
+            <div class="info-box shadow-sm mb-0" style="border-left: 4px solid #6096B4;">
+                <span class="info-box-icon" style="background-color:#6096B4;">
+                    <i class="fa fa-shopping-cart" style="color:white;"></i>
+                </span>
+                <div class="info-box-content">
+                    <span class="info-box-text">KiuShop</span>
+                    <span class="info-box-number" id="card_kiushop"><?= $statistik['kiushop'] ?></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER PRODUK FOKUS + ONLINE SHOP -->
+    <div class="row mb-3 px-2">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body py-2">
+                    
+                    <!-- Filter Produk Fokus -->
+                    <div class="d-flex align-items-center flex-wrap mb-2">
+                        <label class="mr-2 mb-1"><strong>Produk Fokus:</strong></label>
+                        <div class="btn-group flex-wrap" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-success btn-filter-fokus" data-fokus="fokus">Fokus</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-filter-fokus" data-fokus="non_fokus">Non Fokus</button>
+                            <!-- <button type="button" class="btn btn-sm btn-outline-warning btn-filter-fokus" 
+                                    data-fokus="kosong">Tanpa Fokus</button> -->
+                        </div>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <!-- Filter Online Shop -->
+                    <div class="d-flex align-items-center flex-wrap">
+                        <label class="mr-2 mb-1"><strong>Online Shop:</strong></label>
+                        <div class="btn-group flex-wrap" role="group">
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-filter-online active" 
+                                    data-online="">Semua</button>
+
+                            <!-- Shopee -->
+                            <button type="button" class="btn btn-sm btn-filter-online" 
+                                    data-online="shopee"
+                                    style="border:1px solid #ee4d2d; color:#ee4d2d; background:white;">
+                                Shopee
+                            </button>
+
+                            <!-- Tokopedia -->
+                            <button type="button" class="btn btn-sm btn-filter-online" 
+                                    data-online="tokopedia"
+                                    style="border:1px solid #42b549; color:#42b549; background:white;">
+                                Tokopedia
+                            </button>
+
+                            <!-- KiuShop -->
+                            <button type="button" class="btn btn-sm btn-filter-online" 
+                                    data-online="kiushop"
+                                    style="border:1px solid #6096B4; color:#6096B4; background:white;">
+                                KiuShop
+                            </button>
+
+                            <!-- Belum ada platform -->
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-filter-online" 
+                                    data-online="kosong">
+                                <i class="fa fa-times-circle"></i> Belum Ada
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <!-- Filter Status Aktif -->
+                    <div class="d-flex align-items-center flex-wrap">
+                        <label class="mr-2 mb-1"><strong>Status Produk:</strong></label>
+                        <div class="btn-group flex-wrap" role="group">
+                            <button type="button" class="btn btn-sm btn-success btn-filter-aktif active"
+                                    data-aktif="F">
+                                <i class="fa fa-check-circle"></i> Aktif
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-filter-aktif"
+                                    data-aktif="T">
+                                <i class="fa fa-times-circle"></i> Non Aktif
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="content px-2" style="margin-top:-10px;">
         <div class="row">
             <div class="col-lg">
@@ -118,6 +268,7 @@
                                         <th>Kelompok Bahan</th>
                                         <th>Bahan Aktif</th>
                                         <th>Gambar Produk</th>
+                                        <th>Status Online</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
